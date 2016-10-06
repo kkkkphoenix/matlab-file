@@ -1,15 +1,16 @@
 %单个高斯波束传播
-c=3e8;f=3e10;
-lambda=1;
-w0x=5;w0y=w0x;
-z0x=10;z0y=z0x;
+c=3e8;f=1e10;
+lambda=10;
+w0x=35;w0y=w0x;
+z0x=20;z0y=z0x;
 n1=1;n2=2;
 R1=60;R2=R1;
-C11=1/R1;C22=1/R2;
+% C11=1/R1;C22=1/R2;
+C11=0;C22=0;
 k1=2*pi/lambda;k2=n2/n1*k1;
-Ex=10;Ey=0;
+Ex=1;Ey=0;
 theta=(-90:1:90)*pi/180;
-distance=30*lambda;
+distance=50;
 
 %入射波的参数
 z =0;
@@ -30,7 +31,7 @@ x_hat=[1,0,0];
 y_hat=[0,1,0];
 z_hat=[0,0,1];
 thetai=30*pi/180;
-thetat=asin(n1*thetai/n2);
+thetat=asin(n1*sin(thetai)/n2);
 phi=0;
 %这里采用的是另外的定义方式，因为原文的方法在theta=0处不连续
 zi_hat=[sin(thetai)*cos(phi),sin(thetai)*sin(phi),cos(thetai)];
@@ -79,16 +80,19 @@ TTE=2*cos(thetai)*sin(thetat)/sin(thetat+thetai);
 TTM=2*cos(thetai)*sin(thetat)/sin(thetai+thetat)/cos(thetai-thetat);
 At=sqrt(w0x*w0y/wx/wy)*exp(1i*etat);
 Et0x=Ex*TTE*E0i/At;
-% Et0y=Ey*TTE*E0i/At;
-H=zeros(length(theta),3);
+ Et0y=Ey*TTE*E0i/At;
+H=zeros(length(X),3);
+X=(-150:2:150);
 
-for kk=1:length(theta)
+for kk=1:length(X)
     Y=0;
-    Z=distance*cos(theta(kk));
-    X=distance*sin(theta(kk));
-    point=[X,Y,Z];
-%     pp=point*C_refract2principle;%main coordinate
-    Xt=X;Yt=Y;Zt=Z;
+%     Z=distance*cos(theta(kk));
+%     X=distance*sin(theta(kk));
+    Z=distance;
+    x=X(kk);
+    point=[x,Y,Z];
+    pp=point*C_refract2principle;%main coordinate
+    Xt=pp(1);Yt=pp(2);Zt=pp(3);
     Rx=(Zt-z0x)*(1+(zrx/(Zt-z0x))^2);
     wx=w0x*sqrt(1+((Zt-z0x)/zry)^2);
     qx=1/(1/Rx-1i*lambda/pi/n2/wx^2);
@@ -98,17 +102,19 @@ for kk=1:length(theta)
     temp=sqrt(w0x*w0y/wx/wy)*exp(-1i*k2*(Zt+0.5*(Xt^2/qx+Yt^2/qy)+1i*etat));
     H(kk,:)=[Ex*Et0x*temp,Ey*Et0y*temp,0];
 end
-plot(theta*180/pi,(abs(H(:,1))/100000),'--r')
+
+plot(X,(abs(H(:,1))),'--r')
 hold on
-plot(theta*180/pi,(abs(H(:,1))/TTE/100000),'-b')
+scatter()
+% plot(theta*180/pi,(abs(H(:,1))/TTE/100000),'-b')
 hold on
-plot(theta*180/pi,(abs(H(:,1))/TTE*RTE/100000),'-g')
+% plot(theta*180/pi,(abs(H(:,1))/TTE*RTE/100000),'-g')
 title('X-direction ')
-xlabel('theta(degrees)')
+xlabel('X position')
 ylabel('amplitude')
 legend('transimitted','incident','reflected')
 % figure(2)
-% plot(theta*180/pi,(abs(H(:,2))),'--r')
+% plot(X,(abs(H(:,2))),'--r')
 % title('Y-direction')
 % xlabel('theta(degrees)')
 % ylabel('amplitude')
